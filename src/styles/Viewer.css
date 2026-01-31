@@ -133,6 +133,49 @@
   flex-shrink: 0;
 }
 
+/* External source (Archive.org) */
+.file-source {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.source-badge {
+  background: linear-gradient(135deg, #6c63ff, #4ecdc4);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.file-source .creator {
+  color: #888;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 300px;
+}
+
+.archive-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6c63ff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.archive-link:hover {
+  color: #4ecdc4;
+}
+
+.archive-link svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* Erro */
 .viewer-error {
   text-align: center;

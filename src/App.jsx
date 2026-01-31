@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import { useStore } from './store/useStore'
+import { useStoriesStore } from './store/useStoriesStore'
 import Scene3D from './components/Scene3D'
 import Sidebar from './components/Sidebar'
 import Viewer from './components/Viewer'
 import WelcomeScreen from './components/WelcomeScreen'
 import StoryModal from './components/StoryModal'
 import SelectionBar from './components/SelectionBar'
+import ArchiveSearch from './components/ArchiveSearch'
 import './styles/App.css'
 
 function App() {
   const { libraryPath, files, selectedFile, setLibraryPath, setFiles } = useStore()
+  const { isArchiveSearchOpen, closeArchiveSearch } = useStoriesStore()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -81,6 +84,7 @@ function App() {
       </main>
       {selectedFile && <Viewer />}
       <StoryModal />
+      <ArchiveSearch isOpen={isArchiveSearchOpen} onClose={closeArchiveSearch} />
     </div>
   )
 }

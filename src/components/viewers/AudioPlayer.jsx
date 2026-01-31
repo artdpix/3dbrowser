@@ -11,7 +11,21 @@ function AudioPlayer({ file }) {
   const [volume, setVolume] = useState(1)
   const [audioUrl, setAudioUrl] = useState(null)
 
-  // Obter URL do ficheiro (como Data URL)
+  // Para itens externos do archive.org, usar o player embutido deles
+  if (file.isExternal && file.archiveId) {
+    return (
+      <div className="audio-player audio-player-external">
+        <iframe
+          src={`https://archive.org/embed/${file.archiveId}`}
+          title={file.name}
+          className="archive-embed"
+          allowFullScreen
+        />
+      </div>
+    )
+  }
+
+  // Obter URL do ficheiro local (como Data URL)
   useEffect(() => {
     async function loadAudio() {
       try {

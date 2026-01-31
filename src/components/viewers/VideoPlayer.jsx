@@ -16,7 +16,21 @@ function VideoPlayer({ file }) {
 
   let hideControlsTimeout = useRef()
 
-  // Obter URL do ficheiro (como Data URL)
+  // Para itens externos do archive.org, usar o player embutido deles
+  if (file.isExternal && file.archiveId) {
+    return (
+      <div className="video-player video-player-external">
+        <iframe
+          src={`https://archive.org/embed/${file.archiveId}`}
+          title={file.name}
+          className="archive-embed"
+          allowFullScreen
+        />
+      </div>
+    )
+  }
+
+  // Obter URL do ficheiro local (como Data URL)
   useEffect(() => {
     async function loadVideo() {
       try {

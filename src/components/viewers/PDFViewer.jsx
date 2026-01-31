@@ -15,7 +15,21 @@ function PDFViewer({ file }) {
   const [pdfDoc, setPdfDoc] = useState(null)
   const canvasRef = useRef()
 
-  // Carregar PDF
+  // Para itens externos do archive.org, usar o viewer embutido deles
+  if (file.isExternal && file.archiveId) {
+    return (
+      <div className="pdf-viewer pdf-viewer-external">
+        <iframe
+          src={`https://archive.org/embed/${file.archiveId}`}
+          title={file.name}
+          className="archive-embed"
+          allowFullScreen
+        />
+      </div>
+    )
+  }
+
+  // Carregar PDF local
   useEffect(() => {
     let cancelled = false
 
@@ -27,7 +41,7 @@ function PDFViewer({ file }) {
         let pdfData
 
         if (window.electronAPI) {
-          // No Electron, ler o ficheiro
+          // No Electron, ler o ficheiro local
           const result = await window.electronAPI.readFile(file.path)
           if (!result.success) {
             throw new Error(result.error)

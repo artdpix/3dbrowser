@@ -70,12 +70,34 @@ function Viewer() {
 
         {/* Footer com info */}
         <div className="viewer-footer">
-          <span className="file-path" title={selectedFile.relativePath}>
-            {selectedFile.relativePath}
-          </span>
-          <span className="file-size">
-            {formatFileSize(selectedFile.size)}
-          </span>
+          {selectedFile.isExternal ? (
+            <>
+              <span className="file-source">
+                <span className="source-badge">Archive.org</span>
+                {selectedFile.creator && <span className="creator">{selectedFile.creator}</span>}
+              </span>
+              <a
+                href={selectedFile.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="archive-link"
+              >
+                Ver no Archive.org
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/>
+                </svg>
+              </a>
+            </>
+          ) : (
+            <>
+              <span className="file-path" title={selectedFile.relativePath}>
+                {selectedFile.relativePath}
+              </span>
+              <span className="file-size">
+                {formatFileSize(selectedFile.size)}
+              </span>
+            </>
+          )}
         </div>
       </div>
     </div>

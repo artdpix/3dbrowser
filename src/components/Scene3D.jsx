@@ -32,6 +32,15 @@ function useThumbnail(file) {
 
     async function loadThumbnail() {
       try {
+        // Para itens externos (archive.org), usar o thumbnail diretamente
+        if (file.isExternal && file.thumbnail) {
+          if (!cancelled) {
+            setThumbnail(file.thumbnail)
+            setLoading(false)
+          }
+          return
+        }
+
         // Primeiro verificar cache
         const cached = getCachedThumbnail(file.id)
         if (cached) {
@@ -57,8 +66,8 @@ function useThumbnail(file) {
       }
     }
 
-    // Só gerar para tipos que suportam preview
-    if (['image', 'pdf', 'video'].includes(file.type)) {
+    // Só gerar para tipos que suportam preview (ou itens externos com thumbnail)
+    if (file.isExternal || ['image', 'pdf', 'video'].includes(file.type)) {
       loadThumbnail()
     } else {
       setLoading(false)
@@ -67,7 +76,7 @@ function useThumbnail(file) {
     return () => {
       cancelled = true
     }
-  }, [file.id, file.type])
+  }, [file.id, file.type, file.isExternal, file.thumbnail])
 
   return { thumbnail, loading }
 }

@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 
-// Chave para localStorage
+// Chaves para localStorage
 const STORAGE_KEY = '3dlibrary-stories'
+const EXTERNAL_ITEMS_KEY = '3dlibrary-external-items'
 
 // Carregar histórias do localStorage
 function loadStoriesFromStorage() {
@@ -22,9 +23,31 @@ function saveStoriesToStorage(stories) {
   }
 }
 
+// Carregar itens externos do localStorage
+function loadExternalItemsFromStorage() {
+  try {
+    const saved = localStorage.getItem(EXTERNAL_ITEMS_KEY)
+    return saved ? JSON.parse(saved) : {}
+  } catch {
+    return {}
+  }
+}
+
+// Guardar itens externos no localStorage
+function saveExternalItemsToStorage(items) {
+  try {
+    localStorage.setItem(EXTERNAL_ITEMS_KEY, JSON.stringify(items))
+  } catch (e) {
+    console.error('Erro ao guardar itens externos:', e)
+  }
+}
+
 export const useStoriesStore = create((set, get) => ({
   // Lista de histórias
   stories: loadStoriesFromStorage(),
+
+  // Itens externos (do archive.org) - mapa por ID
+  externalItems: loadExternalItemsFromStorage(),
 
   // História atualmente selecionada para visualização
   activeStory: null,
@@ -36,6 +59,9 @@ export const useStoriesStore = create((set, get) => ({
   // Modal de criação/edição
   isModalOpen: false,
   modalMode: 'create', // 'create' ou 'edit'
+
+  // Estado da pesquisa do Archive
+  isArchiveSearchOpen: false,
 
   // Ações - Criar história
   createStory: (name, description = '', color = '#6c63ff') => {
@@ -159,14 +185,54 @@ export const useStoriesStore = create((set, get) => ({
     set({ isModalOpen: false })
   },
 
-  // Obter items de uma história (com dados completos dos ficheiros)
+  // Abrir/fechar pesquisa do Archive
+  openArchiveSearch: () => set({ isArchiveSearchOpen: true }),
+  closeArchiveSearch: () => set({ isArchiveSearchOpen: false }),
+
+  // Adicionar item externo (do archive.org)
+  addExternalItem: (item) => {
+    const { externalItems } = get()
+    const updated = { ...externalItems, [item.id]: item }
+    set({ externalItems: updated })
+    saveExternalItemsToStorage(updated)
+  },
+
+  // Obter item externo por ID
+  getExternalItem: (itemId) => {
+    const { externalItems } = get()
+    return externalItems[itemId] || null
+  },
+
+  // Remover item externo
+  removeExternalItem: (itemId) => {
+    const { externalItems } = get()
+    const updated = { ...externalItems }
+    delete updated[itemId]
+    set({ externalItems: updated })
+    saveExternalItemsToStorage(updated)
+  },
+
+  // Obter items de uma história (com dados completos dos ficheiros e itens externos)
   getStoryItems: (storyId, allFiles) => {
-    const { stories } = get()
+    const { stories, externalItems } = get()
     const story = stories.find(s => s.id === storyId)
     if (!story) return []
 
     return story.items
-      .map(itemId => allFiles.find(f => f.id === itemId))
+      .map(itemId => {
+        // Primeiro tentar encontrar nos ficheiros locais
+        const localFile = allFiles.find(f => f.id === itemId)
+        if (localFile) return localFile
+
+        // Se não encontrar, procurar nos itens externos
+        return externalItems[itemId] || null
+      })
       .filter(Boolean)
+  },
+
+  // Obter todos os itens externos como array
+  getAllExternalItems: () => {
+    const { externalItems } = get()
+    return Object.values(externalItems)
   }
 }))

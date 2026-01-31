@@ -11,10 +11,16 @@ function ImageViewer({ file }) {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const containerRef = useRef()
 
-  // Obter URL da imagem (como Data URL)
+  // Obter URL da imagem (como Data URL ou URL remota)
   useEffect(() => {
     async function loadImage() {
       try {
+        // Verificar se é um ficheiro externo (archive.org)
+        if (file.isExternal && (file.streamUrl || file.thumbnail)) {
+          setImageUrl(file.streamUrl || file.thumbnail)
+          return
+        }
+
         if (window.electronAPI) {
           const result = await window.electronAPI.readFileAsDataUrl(file.path)
           if (!result.success) {
@@ -30,7 +36,7 @@ function ImageViewer({ file }) {
       }
     }
     loadImage()
-  }, [file.path])
+  }, [file.path, file.isExternal, file.streamUrl, file.thumbnail])
 
   const handleImageLoad = () => {
     setLoading(false)
