@@ -1,2 +1,2 @@
-# Make your history 3D browsable 
+# Make your story 3D browsable 
 ## testing stuffs
