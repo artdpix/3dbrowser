@@ -1,5 +1,7 @@
 import React from 'react'
 import { useStore } from '../store/useStore'
+import { useStoriesStore } from '../store/useStoriesStore'
+import StoriesList from './StoriesList'
 import '../styles/Sidebar.css'
 
 function Sidebar({ onChangeLibrary }) {
@@ -16,6 +18,8 @@ function Sidebar({ onChangeLibrary }) {
     getStats
   } = useStore()
 
+  const { activeStory, exitStoryView } = useStoriesStore()
+
   const stats = getStats()
   const totalPages = Math.ceil(filteredFiles.length / itemsPerPage)
 
@@ -26,6 +30,42 @@ function Sidebar({ onChangeLibrary }) {
     { key: 'video', label: 'Vídeo', count: stats.video, color: '#ffd93d' },
     { key: 'image', label: 'Imagens', count: stats.image, color: '#a855f7' }
   ]
+
+  // Se estiver a ver uma história, mostrar interface diferente
+  if (activeStory) {
+    return (
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <button className="back-btn" onClick={exitStoryView}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Voltar
+          </button>
+        </div>
+
+        <div className="story-view-info" style={{ '--story-color': activeStory.color }}>
+          <div className="story-color-bar" />
+          <h2>{activeStory.name}</h2>
+          {activeStory.description && (
+            <p className="story-description">{activeStory.description}</p>
+          )}
+          <div className="story-meta">
+            <span>{activeStory.items.length} itens</span>
+          </div>
+        </div>
+
+        <div className="sidebar-footer">
+          <div className="instructions">
+            <p><strong>Controlos:</strong></p>
+            <p>Arrastar: Rodar vista</p>
+            <p>Scroll: Zoom</p>
+            <p>Clique: Abrir ficheiro</p>
+          </div>
+        </div>
+      </aside>
+    )
+  }
 
   return (
     <aside className="sidebar">
@@ -111,6 +151,9 @@ function Sidebar({ onChangeLibrary }) {
           </button>
         </div>
       )}
+
+      {/* Lista de Histórias */}
+      <StoriesList />
 
       {/* Instruções */}
       <div className="sidebar-footer">

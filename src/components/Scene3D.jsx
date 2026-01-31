@@ -1,7 +1,8 @@
 import React, { Suspense, useMemo, useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, PerspectiveCamera, Environment, Text, RoundedBox } from '@react-three/drei'
+import { OrbitControls, PerspectiveCamera, Text, RoundedBox } from '@react-three/drei'
 import { useStore } from '../store/useStore'
+import { useStoriesStore } from '../store/useStoriesStore'
 import * as THREE from 'three'
 
 // Cores por tipo de ficheiro
@@ -21,16 +22,16 @@ const TYPE_LABELS = {
 }
 
 // Componente para cada item da biblioteca
-function LibraryItem({ file, position, onClick }) {
+function LibraryItem({ file, position, onClick, isSelected, isSelectionMode, storyColor }) {
   const meshRef = useRef()
   const [hovered, setHovered] = React.useState(false)
 
   const color = TYPE_COLORS[file.type] || '#6c63ff'
 
-  useFrame((state) => {
+  useFrame(() => {
     if (meshRef.current) {
-      // Animação suave de hover
-      const targetScale = hovered ? 1.1 : 1
+      // Animação suave de hover/seleção
+      const targetScale = hovered ? 1.15 : (isSelected ? 1.05 : 1)
       meshRef.current.scale.lerp(
         new THREE.Vector3(targetScale, targetScale, targetScale),
         0.1
@@ -39,46 +40,62 @@ function LibraryItem({ file, position, onClick }) {
       if (hovered) {
         meshRef.current.rotation.y += 0.01
       }
+      // Animação de seleção
+      if (isSelected && !hovered) {
+        meshRef.current.rotation.y += 0.005
+      }
     }
   })
 
+  const handleClick = (e) => {
+    e.stopPropagation()
+    onClick(file)
+  }
+
   return (
     <group position={position}>
+      {/* Indicador de seleção (anel à volta) */}
+      {isSelectionMode && isSelected && (
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]}>
+          <ringGeometry args={[0.9, 1.1, 32]} />
+          <meshBasicMaterial color={storyColor || '#ffd93d'} transparent opacity={0.8} />
+        </mesh>
+      )}
+
       {/* Objeto 3D baseado no tipo */}
       <group
         ref={meshRef}
-        onClick={(e) => {
-          e.stopPropagation()
-          onClick(file)
-        }}
+        onClick={handleClick}
         onPointerOver={(e) => {
           e.stopPropagation()
           setHovered(true)
           document.body.style.cursor = 'pointer'
         }}
-        onPointerOut={(e) => {
+        onPointerOut={() => {
           setHovered(false)
           document.body.style.cursor = 'auto'
         }}
       >
         {file.type === 'pdf' ? (
-          // Livro para PDF
           <RoundedBox args={[0.8, 1.1, 0.15]} radius={0.02}>
             <meshStandardMaterial
-              color={hovered ? '#ff8888' : color}
+              color={isSelected ? storyColor : (hovered ? '#ff8888' : color)}
               metalness={0.1}
               roughness={0.8}
+              emissive={isSelected ? storyColor : '#000'}
+              emissiveIntensity={isSelected ? 0.3 : 0}
             />
           </RoundedBox>
         ) : file.type === 'audio' ? (
-          // Disco para áudio
           <group>
             <mesh rotation={[Math.PI / 2, 0, 0]}>
               <cylinderGeometry args={[0.5, 0.5, 0.05, 32]} />
               <meshStandardMaterial
-                color={hovered ? '#6fefe6' : color}
+                color={isSelected ? storyColor : (hovered ? '#6fefe6' : color)}
                 metalness={0.3}
                 roughness={0.4}
+                emissive={isSelected ? storyColor : '#000'}
+                emissiveIntensity={isSelected ? 0.3 : 0}
               />
             </mesh>
             <mesh rotation={[Math.PI / 2, 0, 0]}>
@@ -87,32 +104,28 @@ function LibraryItem({ file, position, onClick }) {
             </mesh>
           </group>
         ) : file.type === 'image' ? (
-          // Quadro/moldura para imagem
           <group>
-            {/* Moldura */}
             <RoundedBox args={[1.0, 1.0, 0.08]} radius={0.02}>
               <meshStandardMaterial
-                color={hovered ? '#c084fc' : '#1a1a2e'}
+                color={isSelected ? storyColor : (hovered ? '#c084fc' : '#1a1a2e')}
                 metalness={0.3}
                 roughness={0.5}
               />
             </RoundedBox>
-            {/* Interior do quadro */}
             <mesh position={[0, 0, 0.045]}>
               <planeGeometry args={[0.85, 0.85]} />
               <meshStandardMaterial
-                color={hovered ? '#d8b4fe' : color}
-                emissive={hovered ? color : '#000'}
-                emissiveIntensity={hovered ? 0.4 : 0.1}
+                color={isSelected ? storyColor : (hovered ? '#d8b4fe' : color)}
+                emissive={isSelected ? storyColor : (hovered ? color : '#000')}
+                emissiveIntensity={isSelected ? 0.4 : (hovered ? 0.4 : 0.1)}
               />
             </mesh>
           </group>
         ) : (
-          // Ecrã para vídeo
           <group>
             <RoundedBox args={[1.2, 0.8, 0.08]} radius={0.02}>
               <meshStandardMaterial
-                color="#2a2a4e"
+                color={isSelected ? storyColor : '#2a2a4e'}
                 metalness={0.5}
                 roughness={0.3}
               />
@@ -120,9 +133,9 @@ function LibraryItem({ file, position, onClick }) {
             <mesh position={[0, 0, 0.045]}>
               <planeGeometry args={[1.1, 0.7]} />
               <meshStandardMaterial
-                color={hovered ? '#ffe066' : color}
-                emissive={hovered ? color : '#000'}
-                emissiveIntensity={hovered ? 0.3 : 0}
+                color={isSelected ? storyColor : (hovered ? '#ffe066' : color)}
+                emissive={isSelected ? storyColor : (hovered ? color : '#000')}
+                emissiveIntensity={isSelected ? 0.4 : (hovered ? 0.3 : 0)}
               />
             </mesh>
           </group>
@@ -132,7 +145,7 @@ function LibraryItem({ file, position, onClick }) {
         <Text
           position={[0, -0.8, 0]}
           fontSize={0.15}
-          color="#888"
+          color={isSelected ? '#fff' : '#888'}
           anchorX="center"
           anchorY="middle"
         >
@@ -153,16 +166,26 @@ function LibraryItem({ file, position, onClick }) {
         {file.name.length > 20 ? file.name.substring(0, 20) + '...' : file.name}
       </Text>
 
+      {/* Indicador de seleção (checkmark) */}
+      {isSelectionMode && isSelected && (
+        <group position={[0.6, 0.6, 0.2]}>
+          <mesh>
+            <sphereGeometry args={[0.15, 16, 16]} />
+            <meshBasicMaterial color={storyColor || '#22c55e'} />
+          </mesh>
+        </group>
+      )}
+
       {/* Indicador de hover */}
       {hovered && (
-        <pointLight position={[0, 0, 1]} intensity={0.5} color={color} distance={3} />
+        <pointLight position={[0, 0, 1]} intensity={0.5} color={isSelected ? storyColor : color} distance={3} />
       )}
     </group>
   )
 }
 
 // Sala/Galeria
-function GalleryRoom() {
+function GalleryRoom({ storyColor }) {
   return (
     <group>
       {/* Chão */}
@@ -171,7 +194,7 @@ function GalleryRoom() {
         <meshStandardMaterial color="#1a1a2e" metalness={0.1} roughness={0.9} />
       </mesh>
 
-      {/* Paredes traseiras (decorativas) */}
+      {/* Paredes traseiras */}
       <mesh position={[0, 5, -15]}>
         <planeGeometry args={[50, 15]} />
         <meshStandardMaterial color="#16213e" metalness={0} roughness={1} />
@@ -179,7 +202,7 @@ function GalleryRoom() {
 
       {/* Luzes ambiente */}
       <pointLight position={[0, 8, 0]} intensity={0.5} color="#fff" />
-      <pointLight position={[-10, 5, 5]} intensity={0.3} color="#6c63ff" />
+      <pointLight position={[-10, 5, 5]} intensity={0.3} color={storyColor || '#6c63ff'} />
       <pointLight position={[10, 5, 5]} intensity={0.3} color="#4ecdc4" />
     </group>
   )
@@ -187,17 +210,60 @@ function GalleryRoom() {
 
 // Componente principal da cena
 function Scene() {
-  const { getCurrentPageFiles, selectFile } = useStore()
-  const files = getCurrentPageFiles()
+  const { getCurrentPageFiles, selectFile, files: allFiles } = useStore()
+  const {
+    activeStory,
+    editingStory,
+    selectedItems,
+    toggleItemSelection,
+    getStoryItems
+  } = useStoriesStore()
 
-  // Calcular posições em grid
+  // Determinar que ficheiros mostrar
+  const filesToShow = useMemo(() => {
+    if (activeStory) {
+      // Mostrar apenas os itens da história ativa
+      return getStoryItems(activeStory.id, allFiles)
+    }
+    return getCurrentPageFiles()
+  }, [activeStory, allFiles, getCurrentPageFiles, getStoryItems])
+
+  // Handler de clique - diferente em modo seleção vs normal
+  const handleItemClick = (file) => {
+    if (editingStory) {
+      // Modo seleção: toggle seleção
+      toggleItemSelection(file.id)
+    } else {
+      // Modo normal: abrir viewer
+      selectFile(file)
+    }
+  }
+
+  // Calcular posições
   const itemPositions = useMemo(() => {
+    if (activeStory && filesToShow.length > 0) {
+      // Layout em círculo para histórias
+      const radius = Math.max(5, filesToShow.length * 0.8)
+      return filesToShow.map((file, index) => {
+        const angle = (index / filesToShow.length) * Math.PI * 2 - Math.PI / 2
+        return {
+          file,
+          position: [
+            Math.cos(angle) * radius,
+            0,
+            Math.sin(angle) * radius
+          ]
+        }
+      })
+    }
+
+    // Layout em grid para biblioteca
     const cols = 8
     const spacingX = 2
     const spacingZ = 2.5
     const startX = -((cols - 1) * spacingX) / 2
 
-    return files.map((file, index) => {
+    return filesToShow.map((file, index) => {
       const col = index % cols
       const row = Math.floor(index / cols)
       return {
@@ -209,20 +275,26 @@ function Scene() {
         ]
       }
     })
-  }, [files])
+  }, [filesToShow, activeStory])
+
+  const storyColor = activeStory?.color || editingStory?.color
 
   return (
     <>
       {/* Câmera e controlos */}
-      <PerspectiveCamera makeDefault position={[0, 3, 12]} fov={60} />
+      <PerspectiveCamera
+        makeDefault
+        position={activeStory ? [0, 8, 15] : [0, 3, 12]}
+        fov={60}
+      />
       <OrbitControls
         enablePan={true}
         enableZoom={true}
         enableRotate={true}
         minDistance={5}
-        maxDistance={30}
+        maxDistance={40}
         maxPolarAngle={Math.PI / 2.1}
-        target={[0, 0, -3]}
+        target={[0, 0, 0]}
       />
 
       {/* Iluminação */}
@@ -230,23 +302,40 @@ function Scene() {
       <directionalLight position={[10, 10, 5]} intensity={0.5} castShadow />
 
       {/* Ambiente */}
-      <fog attach="fog" args={['#1a1a2e', 15, 40]} />
+      <fog attach="fog" args={['#1a1a2e', 15, 50]} />
 
       {/* Sala */}
-      <GalleryRoom />
+      <GalleryRoom storyColor={storyColor} />
 
-      {/* Items da biblioteca */}
+      {/* Título da história (se ativa) */}
+      {activeStory && (
+        <Text
+          position={[0, 4, 0]}
+          fontSize={0.8}
+          color={activeStory.color}
+          anchorX="center"
+          anchorY="middle"
+          font={undefined}
+        >
+          {activeStory.name}
+        </Text>
+      )}
+
+      {/* Items */}
       {itemPositions.map(({ file, position }) => (
         <LibraryItem
           key={file.id}
           file={file}
           position={position}
-          onClick={selectFile}
+          onClick={handleItemClick}
+          isSelected={selectedItems.includes(file.id)}
+          isSelectionMode={!!editingStory}
+          storyColor={storyColor}
         />
       ))}
 
       {/* Mensagem se não houver ficheiros */}
-      {files.length === 0 && (
+      {filesToShow.length === 0 && (
         <Text
           position={[0, 1, 0]}
           fontSize={0.5}
@@ -254,7 +343,7 @@ function Scene() {
           anchorX="center"
           anchorY="middle"
         >
-          Nenhum ficheiro encontrado
+          {activeStory ? 'Esta história está vazia' : 'Nenhum ficheiro encontrado'}
         </Text>
       )}
     </>

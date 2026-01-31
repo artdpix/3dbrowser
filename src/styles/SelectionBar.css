@@ -1,0 +1,99 @@
+.selection-bar {
+  position: fixed;
+  top: 0;
+  left: 280px;
+  right: 0;
+  background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+  border-bottom: 2px solid var(--story-color);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 500;
+  gap: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.selection-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.selection-story {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: #ddd;
+}
+
+.story-indicator {
+  width: 4px;
+  height: 24px;
+  border-radius: 2px;
+  background: var(--story-color);
+}
+
+.selection-story strong {
+  color: white;
+}
+
+.selection-count {
+  font-size: 0.85rem;
+  color: #888;
+  margin-left: 14px;
+}
+
+.selection-hint {
+  flex: 1;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+}
+
+.selection-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.selection-bar .btn-cancel,
+.selection-bar .btn-save {
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.selection-bar .btn-cancel {
+  background: transparent;
+  border: 1px solid #3a3a5e;
+  color: #888;
+}
+
+.selection-bar .btn-cancel:hover {
+  background: #2a2a4e;
+  color: #aaa;
+}
+
+.selection-bar .btn-save {
+  border: none;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.selection-bar .btn-save:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.selection-bar .btn-save svg {
+  width: 18px;
+  height: 18px;
+}

@@ -4,6 +4,8 @@ import Scene3D from './components/Scene3D'
 import Sidebar from './components/Sidebar'
 import Viewer from './components/Viewer'
 import WelcomeScreen from './components/WelcomeScreen'
+import StoryModal from './components/StoryModal'
+import SelectionBar from './components/SelectionBar'
 import './styles/App.css'
 
 function App() {
@@ -74,9 +76,11 @@ function App() {
     <div className="app">
       <Sidebar onChangeLibrary={selectFolder} />
       <main className="main-content">
+        <SelectionBar />
         <Scene3D />
       </main>
       {selectedFile && <Viewer />}
+      <StoryModal />
     </div>
   )
 }

@@ -217,3 +217,57 @@
 .instructions strong {
   color: #888;
 }
+
+/* Botão voltar */
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid #3a3a5e;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #aaa;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.back-btn:hover {
+  background: #2a2a4e;
+  border-color: #6c63ff;
+  color: #fff;
+}
+
+.back-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Vista de história */
+.story-view-info {
+  padding: 20px;
+  background: #1a1a2e;
+  border-radius: 12px;
+  border-left: 4px solid var(--story-color);
+}
+
+.story-view-info h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.story-description {
+  font-size: 0.9rem;
+  color: #888;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.story-meta {
+  font-size: 0.85rem;
+  color: var(--story-color);
+}
